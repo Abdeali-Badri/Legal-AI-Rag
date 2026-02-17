@@ -8,4 +8,5 @@ dependencies = [
     "unstructured[pdf]>=0.16.17",
     "langchain-text-splitters>=0.3.6",
     "pydantic>=2.10.5",
+    "pdfplumber>=0.11.0",
 ]

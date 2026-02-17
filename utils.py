@@ -181,13 +181,6 @@ def build_chunks(
             page_numbers = [el.page_number for el in group if el.page_number]
             section_headings = [el.section_heading for el in group if el.section_heading]
 
-            # Collect annotations for all elements in this group
-            group_annotations: list[tuple[ClauseType, RiskLevel, str]] = []
-            for el in group:
-                group_annotations.extend(
-                    annotation_index.get(el.element_index, [])
-                )
-
             # Split the merged text
             sub_texts = text_splitter.split_text(merged_text)
 

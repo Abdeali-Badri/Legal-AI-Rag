@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import base64
 import logging
+import re
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -110,43 +111,77 @@ def _resolve_element_type(category: str) -> ElementType:
 
 
 # ---------------------------------------------------------------------------
-# HTML table → Markdown converter
+# Markdown table formatting
 # ---------------------------------------------------------------------------
+
+def _rows_to_markdown(rows: list[list[str]]) -> str:
+    """Convert a list of rows (list of cell strings) into a markdown table."""
+    if not rows:
+        return ""
+
+    col_count = max(len(r) for r in rows)
+    # Pad rows to uniform width
+    for row in rows:
+        while len(row) < col_count:
+            row.append("")
+
+    lines: list[str] = []
+    lines.append("| " + " | ".join(rows[0]) + " |")
+    lines.append("| " + " | ".join(["---"] * col_count) + " |")
+    for row in rows[1:]:
+        lines.append("| " + " | ".join(row) + " |")
+
+    return "\n".join(lines)
+
 
 def _html_table_to_markdown(html: str) -> str:
     """Best-effort conversion of an HTML <table> to a markdown table."""
     try:
-        # Use a simple regex-based approach to avoid heavy dependencies
-        import re
-
         rows: list[list[str]] = []
         for tr_match in re.finditer(r"<tr[^>]*>(.*?)</tr>", html, re.DOTALL):
             cells = re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", tr_match.group(1), re.DOTALL)
-            # Strip nested HTML tags from cell content
             clean_cells = [re.sub(r"<[^>]+>", "", c).strip() for c in cells]
             rows.append(clean_cells)
-
-        if not rows:
-            return html  # fallback: return raw HTML
-
-        # Build markdown table
-        col_count = max(len(r) for r in rows)
-        # Pad rows to uniform width
-        for row in rows:
-            while len(row) < col_count:
-                row.append("")
-
-        lines: list[str] = []
-        # Header row
-        lines.append("| " + " | ".join(rows[0]) + " |")
-        lines.append("| " + " | ".join(["---"] * col_count) + " |")
-        # Data rows
-        for row in rows[1:]:
-            lines.append("| " + " | ".join(row) + " |")
-
-        return "\n".join(lines)
+        return _rows_to_markdown(rows) if rows else html
     except Exception:
         return html
+
+
+def _extract_pdf_tables(file_path: Path) -> list[tuple[int, str]]:
+    """
+    Extract tables from a PDF using pdfplumber.
+
+    Returns a list of (page_number, markdown_table) tuples.
+    """
+    import pdfplumber
+
+    tables: list[tuple[int, str]] = []
+
+    try:
+        with pdfplumber.open(file_path) as pdf:
+            for page_num, page in enumerate(pdf.pages, start=1):
+                page_tables = page.extract_tables()
+                if not page_tables:
+                    continue
+
+                for table_data in page_tables:
+                    if not table_data or len(table_data) < 2:
+                        continue
+
+                    cleaned_rows = [
+                        [(cell or "").strip().replace("\n", " ") for cell in row]
+                        for row in table_data
+                    ]
+
+                    md_table = _rows_to_markdown(cleaned_rows)
+                    if md_table:
+                        tables.append((page_num, md_table))
+
+        logger.info("pdfplumber extracted %d table(s) from %s", len(tables), file_path.name)
+    except Exception as exc:
+        logger.warning("pdfplumber table extraction failed: %s", exc)
+
+    return tables
 
 
 # ---------------------------------------------------------------------------
@@ -205,10 +240,6 @@ def load_document(file_path: str | Path) -> ParsedDocument:
         "strategy": "fast",          # no OCR — fast text extraction
     }
 
-    # PDF-specific: enable table structure inference
-    if suffix == ".pdf":
-        loader_kwargs["infer_table_structure"] = True
-
     loader = UnstructuredLoader(str(file_path), **loader_kwargs)
 
     try:
@@ -220,12 +251,20 @@ def load_document(file_path: str | Path) -> ParsedDocument:
     logger.info("Extracted %d raw elements from %s", len(raw_docs), file_path.name)
 
     # ------------------------------------------------------------------
+    # Extract tables from PDFs using pdfplumber
+    # ------------------------------------------------------------------
+    pdf_tables: list[tuple[int, str]] = []
+    if suffix == ".pdf":
+        pdf_tables = _extract_pdf_tables(file_path)
+
+    # ------------------------------------------------------------------
     # Convert raw LangChain Documents → ParsedElements
     # ------------------------------------------------------------------
     elements: list[ParsedElement] = []
     current_heading: str | None = None
+    idx = 0
 
-    for idx, doc in enumerate(raw_docs):
+    for doc in raw_docs:
         meta = doc.metadata or {}
         category = meta.get("category", "Text")
         el_type = _resolve_element_type(category)
@@ -278,6 +317,40 @@ def load_document(file_path: str | Path) -> ParsedDocument:
                 metadata=extra_meta,
             )
         )
+        idx += 1
+
+    # ------------------------------------------------------------------
+    # Merge pdfplumber tables into the element list
+    # ------------------------------------------------------------------
+    for table_page, table_md in pdf_tables:
+        # Insert table after the last element on the same page
+        insert_pos = len(elements)
+        for i, el in enumerate(elements):
+            if el.page_number is not None and el.page_number > table_page:
+                insert_pos = i
+                break
+
+        # Find the heading context at the insertion point
+        heading_ctx = None
+        for el in reversed(elements[:insert_pos]):
+            if el.section_heading:
+                heading_ctx = el.section_heading
+                break
+
+        table_element = ParsedElement(
+            element_type=ElementType.TABLE,
+            content=table_md,
+            page_number=table_page,
+            element_index=idx,
+            section_heading=heading_ctx,
+            metadata={"source": "pdfplumber"},
+        )
+        elements.insert(insert_pos, table_element)
+        idx += 1
+
+    # Re-index after insertions
+    for i, el in enumerate(elements):
+        el.element_index = i
 
     parsed = ParsedDocument(
         source_file=str(file_path),

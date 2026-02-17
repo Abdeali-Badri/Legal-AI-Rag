@@ -345,8 +345,6 @@ class RiskClassifier:
         factors: list[str],
     ) -> str:
         """Build a human-readable risk explanation."""
-
-
         clause_name = clause_type.value.replace("_", "-")
 
         intro = {
