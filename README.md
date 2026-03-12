@@ -106,7 +106,7 @@ OPENAI_API_KEY=your_openai_api_key_here
 # Add Your Legal Documents :-
 1) Place your legal PDF or text files inside the data/ directory.
 2) Run the App
-3) ```bashpython main.py```
+3) ```python main.py\```
 Then open your browser and navigate to```bash http://localhost:5000 ```
 
 # Pipeline Deep Dive :-
@@ -143,6 +143,7 @@ Flask application that ties the entire pipeline together and serves the HTML int
 
 **Abdeali Badri**
  [github.com/Abdeali-Badri](https://github.com/Abdeali-Badri)
+
 
 
 
