@@ -7,13 +7,7 @@ An end-to-end Retrieval-Augmented Generation (RAG) system that lets you query le
 ![RAG](https://img.shields.io/badge/Architecture-RAG-blueviolet?style=for-the-badge)
 ![uv](https://img.shields.io/badge/Package%20Manager-uv-DE5FE9?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-```
 
----
-
-Just paste these right below your project title (before the Overview section). The badge format is:
-```
-https://img.shields.io/badge/LABEL-MESSAGE-COLOR?style=for-the-badge&logo=LOGONAME
 
 # Overview :-
 Legal AI is a Retrieval-Augmented Generation (RAG) application that enables users to ask natural language questions over a corpus of legal documents. Instead of relying on a generic LLM that may hallucinate legal facts, the system retrieves the most semantically relevant passages from real legal documents and grounds the LLM's response in that context.
@@ -149,6 +143,7 @@ Flask application that ties the entire pipeline together and serves the HTML int
 
 **Abdeali Badri**
  [github.com/Abdeali-Badri](https://github.com/Abdeali-Badri)
+
 
 
 
