@@ -20,23 +20,24 @@ Legal AI is a Retrieval-Augmented Generation (RAG) application that enables user
 The project is built with a fully modular pipeline — each stage (parsing, embedding, retrieval, generation) is its own independent module — and exposed through a clean Flask web interface.
 
 # How it Works :-
+
 ```
 Legal Documents (PDFs/Text)
         │
         ▼
-   [ parser.py]  ──→  Extract & chunk text from legal documents
+   parser.py    ──→  Extract & chunk text from legal documents
         │
         ▼
-[ embeddings.py] ──→  Convert chunks into vector embeddings & store in vector DB
+embeddings.py   ──→  Convert chunks into vector embeddings & store in vector DB
         │
         ▼
-  [ retrieval.py ] ──→  On user query: semantic similarity search → top-k chunks
+ retrieval.py   ──→  On user query: semantic similarity search → top-k chunks
         │
         ▼
-    [ llm.py ]    ──→  Feed retrieved context + query to LLM → grounded answer
+    llm.py      ──→  Feed retrieved context + query to LLM → grounded answer
         │
         ▼
-   [ main.py ]    ──→  Flask web app: serves the UI, handles requests end-to-end
+   main.py      ──→  Flask web app: serves the UI, handles requests end-to-end
 ```
 
 # Key Features :-
@@ -148,5 +149,6 @@ Flask application that ties the entire pipeline together and serves the HTML int
 
 **Abdeali Badri**
  [github.com/Abdeali-Badri](https://github.com/Abdeali-Badri)
+
 
 
