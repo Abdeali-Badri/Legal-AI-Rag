@@ -50,7 +50,7 @@ embeddings.py   ──→  Convert chunks into vector embeddings & store in vect
 6) Modern Python tooling — uses uv for fast, reproducible dependency management
 
 # Tech Stacks :-
-```
+
 
 | Component         | Technology                     |
 |-------------------|--------------------------------|
@@ -62,7 +62,7 @@ embeddings.py   ──→  Convert chunks into vector embeddings & store in vect
 | Package Manager   | uv                             |
 | Language          | Python 3.11+                   |
 | Frontend          | HTML / Jinja2 Templates        |
-```
+
 
 # Project Structure :-
 
@@ -149,6 +149,7 @@ Flask application that ties the entire pipeline together and serves the HTML int
 
 **Abdeali Badri**
  [github.com/Abdeali-Badri](https://github.com/Abdeali-Badri)
+
 
 
 
