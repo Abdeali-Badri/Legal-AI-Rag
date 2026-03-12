@@ -106,19 +106,19 @@ OPENAI_API_KEY=your_openai_api_key_here
 # Add Your Legal Documents :-
 1) Place your legal PDF or text files inside the data/ directory.
 2) Run the App
-3) ```python main.py\```
-Then open your browser and navigate to```bash http://localhost:5000 ```
+3) ```python main.py```
+Then open your browser and navigate to```http://localhost:5000 ```
 
 # Pipeline Deep Dive :-
-1. ```parser.py\``` — Document Parsing
+1. ```parser.py``` — Document Parsing
 Loads legal documents from the data/ folder, extracts raw text, and splits it into overlapping chunks optimized for semantic search.
-2. ```embeddings.py\``` — Vector Embeddings
+2. ```embeddings.py``` — Vector Embeddings
 Converts text chunks into high-dimensional embeddings using a sentence transformer or OpenAI's embedding API, then stores them in a vector database for fast retrieval.
-3. ```retrieval.py\``` — Semantic Retrieval
+3. ```retrieval.py``` — Semantic Retrieval
 At query time, embeds the user's question and performs a cosine similarity search against the stored vectors to retrieve the top-k most relevant legal passages.
-4. ```llm.py\``` — Answer Generation
+4. ```llm.py``` — Answer Generation
 Constructs a prompt by combining the retrieved passages with the user's question, then sends it to the LLM. The model answers strictly based on the retrieved context, minimizing hallucinations.
-5. ```main.py\``` — Web Application
+5. ```main.py``` — Web Application
 Flask application that ties the entire pipeline together and serves the HTML interface where users can type questions and receive answers.
 
 # Use Cases :-
@@ -143,6 +143,7 @@ Flask application that ties the entire pipeline together and serves the HTML int
 
 **Abdeali Badri**
  [github.com/Abdeali-Badri](https://github.com/Abdeali-Badri)
+
 
 
 
